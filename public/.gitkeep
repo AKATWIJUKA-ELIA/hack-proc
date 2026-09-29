@@ -1,0 +1,4 @@
+Static assets served at the site root go here.
+
+The directory is kept even while empty because the Dockerfile copies it, and a
+missing source path fails the build.

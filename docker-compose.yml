@@ -1,0 +1,21 @@
+# Quotebook frontend.
+#
+#   docker compose up --build
+#
+# Then open http://localhost:3000.
+#
+# The backend is Convex Cloud, so there is no database or queue to start here —
+# this file runs one container and nothing else.
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Baked into the JavaScript bundle at build time (see Dockerfile).
+        # Override to point at your own Convex deployment:
+        #   NEXT_PUBLIC_CONVEX_URL=https://<yours>.convex.cloud docker compose up --build
+        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://admired-partridge-220.convex.cloud}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

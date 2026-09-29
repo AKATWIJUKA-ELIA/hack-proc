@@ -1,0 +1,227 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Quotebook's palette. Slate-blue ground with a single teal accent, chosen so
+ * the four board tracks (confirmed / web price / awaiting / no price) each get
+ * a distinct, colour-blind-safe hue that still reads as one system.
+ */
+:root {
+  --radius: 0.7rem;
+
+  --background: oklch(0.99 0.003 250);
+  --foreground: oklch(0.21 0.02 255);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.02 255);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.02 255);
+
+  --primary: oklch(0.52 0.12 205);
+  --primary-foreground: oklch(0.99 0.005 200);
+
+  --secondary: oklch(0.96 0.008 250);
+  --secondary-foreground: oklch(0.3 0.02 255);
+
+  --muted: oklch(0.965 0.006 250);
+  --muted-foreground: oklch(0.52 0.015 255);
+
+  --accent: oklch(0.95 0.02 200);
+  --accent-foreground: oklch(0.3 0.04 205);
+
+  --destructive: oklch(0.58 0.2 25);
+  --destructive-foreground: oklch(0.99 0.005 25);
+
+  --border: oklch(0.91 0.008 250);
+  --input: oklch(0.91 0.008 250);
+  --ring: oklch(0.52 0.12 205);
+
+  /* Board tracks + pipeline states. Defined once, used by badges everywhere. */
+  --track-confirmed: oklch(0.55 0.13 160);
+  --track-confirmed-bg: oklch(0.95 0.04 160);
+  --track-web: oklch(0.55 0.13 250);
+  --track-web-bg: oklch(0.95 0.035 250);
+  --track-awaiting: oklch(0.6 0.13 75);
+  --track-awaiting-bg: oklch(0.955 0.045 85);
+  --track-none: oklch(0.55 0.01 255);
+  --track-none-bg: oklch(0.955 0.005 255);
+
+  --success: oklch(0.55 0.13 160);
+  --success-bg: oklch(0.95 0.04 160);
+  --warning: oklch(0.6 0.13 75);
+  --warning-bg: oklch(0.955 0.045 85);
+}
+
+/*
+ * Dark theme.
+ *
+ * Declared three times on purpose. `.dark` alone only fires when something
+ * adds that class, and nothing here does — so a viewer whose OS is set to dark
+ * would get the light palette. The media query covers that default case; the
+ * `:root:not(.light)` guard keeps an explicit light choice winning over it.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: oklch(0.17 0.015 255);
+    --foreground: oklch(0.95 0.005 250);
+
+    --card: oklch(0.21 0.017 255);
+    --card-foreground: oklch(0.95 0.005 250);
+
+    --popover: oklch(0.21 0.017 255);
+    --popover-foreground: oklch(0.95 0.005 250);
+
+    --primary: oklch(0.72 0.12 195);
+    --primary-foreground: oklch(0.18 0.03 205);
+
+    --secondary: oklch(0.27 0.018 255);
+    --secondary-foreground: oklch(0.95 0.005 250);
+
+    --muted: oklch(0.26 0.016 255);
+    --muted-foreground: oklch(0.68 0.012 255);
+
+    --accent: oklch(0.3 0.03 200);
+    --accent-foreground: oklch(0.92 0.02 195);
+
+    --destructive: oklch(0.65 0.18 25);
+    --destructive-foreground: oklch(0.15 0.02 25);
+
+    --border: oklch(0.3 0.015 255);
+    --input: oklch(0.32 0.015 255);
+    --ring: oklch(0.72 0.12 195);
+
+    --track-confirmed: oklch(0.75 0.14 160);
+    --track-confirmed-bg: oklch(0.29 0.05 165);
+    --track-web: oklch(0.74 0.12 250);
+    --track-web-bg: oklch(0.29 0.05 255);
+    --track-awaiting: oklch(0.79 0.13 85);
+    --track-awaiting-bg: oklch(0.3 0.05 80);
+    --track-none: oklch(0.68 0.012 255);
+    --track-none-bg: oklch(0.27 0.012 255);
+
+    --success: oklch(0.75 0.14 160);
+    --success-bg: oklch(0.29 0.05 165);
+    --warning: oklch(0.79 0.13 85);
+    --warning-bg: oklch(0.3 0.05 80);
+  }
+}
+
+/* The explicit dark choice from the toggle. Written as `:root.dark` so it
+   outranks the media block above on specificity as well as source order. */
+:root.dark {
+  --background: oklch(0.17 0.015 255);
+  --foreground: oklch(0.95 0.005 250);
+
+  --card: oklch(0.21 0.017 255);
+  --card-foreground: oklch(0.95 0.005 250);
+
+  --popover: oklch(0.21 0.017 255);
+  --popover-foreground: oklch(0.95 0.005 250);
+
+  --primary: oklch(0.72 0.12 195);
+  --primary-foreground: oklch(0.18 0.03 205);
+
+  --secondary: oklch(0.27 0.018 255);
+  --secondary-foreground: oklch(0.95 0.005 250);
+
+  --muted: oklch(0.26 0.016 255);
+  --muted-foreground: oklch(0.68 0.012 255);
+
+  --accent: oklch(0.3 0.03 200);
+  --accent-foreground: oklch(0.92 0.02 195);
+
+  --destructive: oklch(0.65 0.18 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+
+  --border: oklch(0.3 0.015 255);
+  --input: oklch(0.32 0.015 255);
+  --ring: oklch(0.72 0.12 195);
+
+  --track-confirmed: oklch(0.75 0.14 160);
+  --track-confirmed-bg: oklch(0.29 0.05 165);
+  --track-web: oklch(0.74 0.12 250);
+  --track-web-bg: oklch(0.29 0.05 255);
+  --track-awaiting: oklch(0.79 0.13 85);
+  --track-awaiting-bg: oklch(0.3 0.05 80);
+  --track-none: oklch(0.68 0.012 255);
+  --track-none-bg: oklch(0.27 0.012 255);
+
+  --success: oklch(0.75 0.14 160);
+  --success-bg: oklch(0.29 0.05 165);
+  --warning: oklch(0.79 0.13 85);
+  --warning-bg: oklch(0.3 0.05 80);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-track-confirmed: var(--track-confirmed);
+  --color-track-confirmed-bg: var(--track-confirmed-bg);
+  --color-track-web: var(--track-web);
+  --color-track-web-bg: var(--track-web-bg);
+  --color-track-awaiting: var(--track-awaiting);
+  --color-track-awaiting-bg: var(--track-awaiting-bg);
+  --color-track-none: var(--track-none);
+  --color-track-none-bg: var(--track-none-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Money and email addresses line up in columns only if the digits do. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* A quiet pulse for rows that are still filling in, not a spinner per cell. */
+@keyframes quotebook-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.animate-live {
+  animation: quotebook-shimmer 1.8s ease-in-out infinite;
+}

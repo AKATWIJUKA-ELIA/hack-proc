@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.local
+next-env.d.ts
+*.tsbuildinfo
+
+# Deployment identifiers and keys. The repo is public from commit one
+# (PLAN.md §7) — nothing in here may ever be committed.
+.env
+.env.local

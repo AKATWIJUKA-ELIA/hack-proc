@@ -1,0 +1,42 @@
+# Keeps the build context small and, more importantly, keeps secrets and host
+# state out of the image. Everything here is either rebuilt inside the
+# container or must never leave this machine.
+
+node_modules
+.next
+out
+build
+dist
+
+# Deployment identifiers and API keys. The image is meant to be shareable;
+# nothing in here may ever be baked into it. The Convex URL the app needs is
+# passed explicitly as a build argument instead.
+.env
+.env.*
+!.env.example
+
+.git
+.gitignore
+
+# Agent/editor state, not application code.
+.claude
+.agents
+.vscode
+.idea
+
+*.log
+npm-debug.log*
+
+README.md
+PLAN.md
+AGENTS.md
+CLAUDE.md
+skills-lock.json
+image.png
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
