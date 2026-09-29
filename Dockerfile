@@ -26,17 +26,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm ci
 RUN npm run build
 
-# next.config.ts sets output: "standalone", whose server lives in
-# .next/standalone and is not given the build's static assets — without this
-# copy every page loads unstyled.
-RUN cp -r .next/static .next/standalone/.next/static \
- && cp -r public .next/standalone/public
-
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 EXPOSE 3000
 
-# Serve the built Next.js app. `next start` refuses a standalone build, so the
-# standalone server is run directly.
-CMD ["node", ".next/standalone/server.js"]
+# Serve the built Next.js app on the default port.
+CMD ["npm", "run", "start", "--", "-p", "3000", "-H", "0.0.0.0"]
