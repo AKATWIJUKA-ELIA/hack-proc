@@ -33,11 +33,7 @@ docker build -t quotebook .
 docker run -p 3000:3000 quotebook
 ```
 
-Open http://localhost:3000 and create an account. Or with compose:
-
-```bash
-docker compose up --build
-```
+Open http://localhost:3000 and create an account.
 
 ### Pointing it at your own Convex deployment
 
