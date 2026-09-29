@@ -4,7 +4,7 @@
 #   docker build -t quotebook .
 #   docker run -p 3000:3000 quotebook
 
-FROM node:22-alpine
+FROM node:22-alpine AS builder
 
 RUN apk add --no-cache git
 
@@ -42,8 +42,17 @@ RUN npm run build
 RUN cp -r .next/static .next/standalone/.next/static \
  && cp -r public .next/standalone/public
 
-RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs \
- && chown -R nextjs:nodejs /app
+# The runner takes only the standalone output — a self-contained server with
+# just the node_modules it actually reaches. The git clone, the full dependency
+# tree, and the build cache all stay behind in the builder.
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 USER nextjs
 
 EXPOSE 3000
@@ -54,5 +63,4 @@ ENV HOSTNAME=0.0.0.0
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/sign-in').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-# Not `next start`, which refuses to serve a standalone build.
-CMD ["node", ".next/standalone/server.js"]
+CMD ["node", "server.js"]
