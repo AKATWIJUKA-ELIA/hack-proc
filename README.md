@@ -20,7 +20,58 @@ board.
 | Durability | `@convex-dev/workflow` |
 | Auth | Custom email + password, PBKDF2, session cookies |
 
-## Running it
+## Running it with Docker
+
+The backend already runs on Convex Cloud, so the image is just the frontend —
+no database to provision, nothing to configure.
+
+The Dockerfile clones the source itself, so it is the only file you need. Save
+it anywhere and run:
+
+```bash
+docker build -t quotebook .
+docker run -p 3000:3000 quotebook
+```
+
+Open http://localhost:3000 and create an account. Or with compose:
+
+```bash
+docker compose up --build
+```
+
+### Pointing it at your own Convex deployment
+
+`NEXT_PUBLIC_CONVEX_URL` is substituted into the JavaScript bundle during
+`next build`, so it is a **build** argument, not a runtime one — setting it at
+`docker run` is too late.
+
+```bash
+docker build --build-arg NEXT_PUBLIC_CONVEX_URL=https://<yours>.convex.cloud -t quotebook .
+```
+
+Use the `.convex.cloud` host; `.convex.site` serves only the webhooks. The
+build refuses a `.convex.site` URL rather than producing an image that cannot
+reach its backend.
+
+### Rebuilding after a push
+
+The clone layer is cached, so a plain rebuild reuses the old source:
+
+```bash
+docker build --build-arg CACHE_BUST=$(date +%s) -t quotebook .
+```
+
+Other build args: `GIT_REPO` and `GIT_REF` to build a fork or pinned revision.
+
+### Note on build-time network access
+
+`next/font/google` downloads Inter and JetBrains Mono during the build, so the
+build needs to reach `fonts.googleapis.com` alongside npm and GitHub. On a
+network that blocks it, the build fails with
+``Failed to fetch `JetBrains Mono` from Google Fonts``. Vendoring the fonts
+with `next/font/local` would remove that dependency.
+
+## Running it locally
 
 ```bash
 npm install

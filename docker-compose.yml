@@ -4,18 +4,31 @@
 #
 # Then open http://localhost:3000.
 #
-# The backend is Convex Cloud, so there is no database or queue to start here —
-# this file runs one container and nothing else.
+# The backend is Convex Cloud, so there is no database, cache, or queue to
+# start here — this file runs one container and nothing else.
+#
+# The Dockerfile clones the source itself, so this compose file works from an
+# empty directory containing nothing but these two files.
 
 services:
   web:
     build:
       context: .
       args:
-        # Baked into the JavaScript bundle at build time (see Dockerfile).
-        # Override to point at your own Convex deployment:
+        # Baked into the JavaScript bundle at build time — see the Dockerfile
+        # for why this cannot be a runtime variable. Override to point at your
+        # own Convex deployment:
         #   NEXT_PUBLIC_CONVEX_URL=https://<yours>.convex.cloud docker compose up --build
         NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://admired-partridge-220.convex.cloud}
+
+        # Build a fork or a pinned revision instead of the default branch.
+        GIT_REPO: ${GIT_REPO:-https://github.com/AKATWIJUKA-ELIA/hack-proc.git}
+        GIT_REF: ${GIT_REF:-trunk}
+
+        # The clone layer is cached, so a rebuild after a push reuses stale
+        # source unless this changes. Force fresh code with:
+        #   CACHE_BUST=$(date +%s) docker compose up --build
+        CACHE_BUST: ${CACHE_BUST:-0}
     ports:
       - "3000:3000"
     restart: unless-stopped
