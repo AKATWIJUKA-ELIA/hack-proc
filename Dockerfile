@@ -1,66 +1,42 @@
-# Quotebook frontend. The backend runs on Convex Cloud, so this image is the
-# Next.js app alone and clones its own source:
+# Quotebook — Next.js frontend, built by cloning the repo (Convex is the hosted
+# backend; this image only runs the frontend and talks to Convex Cloud over HTTP).
 #
 #   docker build -t quotebook .
 #   docker run -p 3000:3000 quotebook
 
-FROM node:22-alpine AS builder
+FROM node:22-slim
 
-RUN apk add --no-cache git
+# git, to clone the project into the image.
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-ARG GIT_REPO=https://github.com/AKATWIJUKA-ELIA/hack-proc.git
-ARG GIT_REF=trunk
-
-# The clone layer is cached, so a rebuild after a push reuses stale source
-# without this: docker build --build-arg CACHE_BUST=$(date +%s) .
-ARG CACHE_BUST=0
-RUN echo "cache bust: $CACHE_BUST"
-
-RUN git clone --depth 1 --branch "$GIT_REF" "$GIT_REPO" /app
+# Clone the repo. Override with --build-arg to build a fork or a branch.
+ARG REPO_URL=https://github.com/AKATWIJUKA-ELIA/hack-proc.git
+ARG REPO_REF=trunk
+RUN git clone --depth 1 --branch ${REPO_REF} ${REPO_URL} /app
 WORKDIR /app
 
-RUN npm ci
-
-# Next substitutes NEXT_PUBLIC_* into the bundle during `next build`, so this
-# must be a build argument — a value passed to `docker run` arrives too late.
+# The Convex Cloud backend URL. Inlined into the client bundle at build time
+# (NEXT_PUBLIC_*), so it must be set before `npm run build`. Defaults to the live
+# deployment so this image builds and runs with no flags.
 ARG NEXT_PUBLIC_CONVEX_URL=https://admired-partridge-220.convex.cloud
-ENV NEXT_PUBLIC_CONVEX_URL=$NEXT_PUBLIC_CONVEX_URL
+ENV NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL}
 
-# .convex.site serves only webhooks, so it would build an app that cannot reach
-# its backend. Fail now, not at first page load.
-RUN case "$NEXT_PUBLIC_CONVEX_URL" in \
-      "" ) echo "ERROR: NEXT_PUBLIC_CONVEX_URL is empty." >&2; exit 1;; \
-      *.convex.site* ) echo "ERROR: use the .convex.cloud host." >&2; exit 1;; \
-    esac
-
+# Install dependencies and build the production bundle.
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
+RUN npm ci
 RUN npm run build
 
-# output: "standalone" does not copy static assets into the standalone tree,
-# so without this every page loads unstyled.
+# next.config.ts sets output: "standalone", whose server lives in
+# .next/standalone and is not given the build's static assets — without this
+# copy every page loads unstyled.
 RUN cp -r .next/static .next/standalone/.next/static \
  && cp -r public .next/standalone/public
 
-# The runner takes only the standalone output — a self-contained server with
-# just the node_modules it actually reaches. The git clone, the full dependency
-# tree, and the build cache all stay behind in the builder.
-FROM node:22-alpine AS runner
-WORKDIR /app
-
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-USER nextjs
-
-EXPOSE 3000
 ENV PORT=3000
-# Next binds 127.0.0.1 by default, which -p 3000:3000 cannot reach.
 ENV HOSTNAME=0.0.0.0
+EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:3000/sign-in').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-
-CMD ["node", "server.js"]
+# Serve the built Next.js app. `next start` refuses a standalone build, so the
+# standalone server is run directly.
+CMD ["node", ".next/standalone/server.js"]
